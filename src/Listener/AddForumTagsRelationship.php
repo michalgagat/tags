@@ -45,12 +45,26 @@ class AddForumTagsRelationship
      */
     public function loadTagsRelationship(WillSerializeData $event)
     {
-        // Expose the complete tag list to clients by adding it as a
-        // relationship to the /api endpoint. Since the Forum model
-        // doesn't actually have a tags relationship, we will manually load and
-        // assign the tags data to it using an event listener.
         if ($event->isController(ShowForumController::class)) {
-            $event->data['tags'] = Tag::whereVisibleTo($event->actor)
+            $event->data['tags'] = Tag::query()
+                ->where(function ($query) use ($event) {
+                    $query
+                        ->where(function ($query) {
+                            $query
+                                ->whereNull('parent_id')
+                                ->whereNotNull('position');
+                        })
+                        ->orWhereIn(
+                            Tag::whereVisibleTo($event->actor)
+                                ->select('id')
+                                ->withCount('discussions')
+                                ->whereNull('parent_id')
+                                ->whereNull('position')
+                                ->orderBy('discussions_count', 'desc')
+                                ->limit(3)
+                        );
+                })
+                ->whereVisibleTo($event->actor)
                 ->withStateFor($event->actor)
                 ->with(['parent', 'lastPostedDiscussion'])
                 ->get();
