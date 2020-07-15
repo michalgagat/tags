@@ -5,10 +5,31 @@ import DiscussionList from 'flarum/components/DiscussionList';
 import TagHero from './components/TagHero';
 
 export default function() {
-  IndexPage.prototype.currentTag = function() {
-    const slug = this.params().tags;
+  IndexPage.prototype.currentActiveTag = null;
 
-    if (slug) return app.store.getBy('tags', 'slug', slug);
+  IndexPage.prototype.currentTag = function() {
+    if (this.currentActiveTag) {
+      return this.currentActiveTag;
+    }
+
+    const slug = this.params().tags;
+    let tag = null;
+
+    if (slug) {
+      tag = app.store.getBy('tags', 'slug', slug);
+    }
+
+    if (slug && (!tag || !tag.children())) {
+      app.store.find('tags', slug, {include: 'children'}).then(() => {
+        this.currentActiveTag = app.store.getBy('tags', 'slug', slug);
+
+        m.redraw()
+      });
+    }
+
+    if (tag) {
+      this.currentActiveTag = tag;
+    }
   };
 
   // If currently viewing a tag, insert a tag hero at the top of the view.
@@ -46,10 +67,10 @@ export default function() {
       if (color) {
         items.get('newDiscussion').props.style = {backgroundColor: color};
       }
-    
+
       items.get('newDiscussion').props.disabled = !canStartDiscussion;
       items.get('newDiscussion').props.children = app.translator.trans(canStartDiscussion ? 'core.forum.index.start_discussion_button' : 'core.forum.index.cannot_start_discussion_button');
-    
+
     }
   });
 

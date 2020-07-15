@@ -12,6 +12,8 @@ namespace Flarum\Tags\Content;
 use Flarum\Api\Client;
 use Flarum\Api\Controller\ListDiscussionsController;
 use Flarum\Frontend\Document;
+use Flarum\Tags\Api\Controller\ListTagsController;
+use Flarum\Tags\Api\Controller\ShowTagController;
 use Flarum\Tags\TagRepository;
 use Flarum\User\User;
 use Illuminate\Contracts\Translation\Translator;
@@ -75,10 +77,14 @@ class Tag
             'filter' => [
                 'q' => "$q tag:$slug"
             ],
-            'page' => ['offset' => ($page - 1) * 20, 'limit' => 20]
+            'page' => ['offset' => ($page - 1) * 20, 'limit' => 20],
+            'include' => 'tags'
         ];
 
-        $apiDocument = $this->getApiDocument($actor, $params);
+        $apiDocument = array_merge(
+            (array) $this->getApiDocument($actor, $params),
+            (array) $this->getTagsDocument($actor, $slug)
+        );
 
         $document->title = $tag->name;
         if ($tag->description) {
@@ -117,5 +123,13 @@ class Tag
     private function getApiDocument(User $actor, array $params)
     {
         return json_decode($this->api->send(ListDiscussionsController::class, $actor, $params)->getBody());
+    }
+
+    private function getTagsDocument(User $actor, string $slug)
+    {
+        return json_decode($this->api->send(ShowTagController::class, $actor, [
+            'slug' => $slug,
+            'include' => 'children'
+        ])->getBody());
     }
 }
