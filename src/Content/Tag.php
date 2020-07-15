@@ -12,7 +12,6 @@ namespace Flarum\Tags\Content;
 use Flarum\Api\Client;
 use Flarum\Api\Controller\ListDiscussionsController;
 use Flarum\Frontend\Document;
-use Flarum\Tags\Api\Controller\ListTagsController;
 use Flarum\Tags\Api\Controller\ShowTagController;
 use Flarum\Tags\TagRepository;
 use Flarum\User\User;
