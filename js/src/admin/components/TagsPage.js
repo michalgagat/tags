@@ -32,6 +32,20 @@ function tagItem(tag) {
 }
 
 export default class TagsPage extends Page {
+  init() {
+    super.init();
+
+    this.tags = [];
+
+    app.store.find('tags').then(() => {
+      let tags = app.store.all('tags').filter(tag => !tag.parent());
+
+      this.tags = sortTags(tags);
+
+      m.redraw();
+    });
+  }
+
   view() {
     return (
       <div className="TagsPage">
@@ -58,7 +72,7 @@ export default class TagsPage extends Page {
             <div className="TagGroup">
               <label>{app.translator.trans('flarum-tags.admin.tags.primary_heading')}</label>
               <ol className="TagList TagList--primary">
-                {sortTags(app.store.all('tags'))
+                {this.tags
                   .filter(tag => tag.position() !== null && !tag.isChild())
                   .map(tagItem)}
               </ol>
@@ -67,7 +81,7 @@ export default class TagsPage extends Page {
             <div className="TagGroup">
               <label>{app.translator.trans('flarum-tags.admin.tags.secondary_heading')}</label>
               <ul className="TagList">
-                {app.store.all('tags')
+                {this.tags
                   .filter(tag => tag.position() === null)
                   .sort((a, b) => a.name().localeCompare(b.name()))
                   .map(tagItem)}

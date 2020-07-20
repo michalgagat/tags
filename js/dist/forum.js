@@ -1520,11 +1520,19 @@ function (_Page) {
   var _proto = TagsPage.prototype;
 
   _proto.init = function init() {
+    var _this = this;
+
     _Page.prototype.init.call(this);
 
-    this.tags = Object(_common_utils_sortTags__WEBPACK_IMPORTED_MODULE_6__["default"])(app.store.all('tags').filter(function (tag) {
-      return !tag.parent();
-    }));
+    this.tags = [];
+    app.store.find('tags').then(function () {
+      var tags = app.store.all('tags').filter(function (tag) {
+        return !tag.parent();
+      });
+      _this.tags = Object(_common_utils_sortTags__WEBPACK_IMPORTED_MODULE_6__["default"])(tags);
+      m.redraw();
+    }); // this.tags = sortTags(app.store.all('tags').filter(tag => !tag.parent()));
+
     app.history.push('tags', app.translator.trans('flarum-tags.forum.header.back_to_tags_tooltip'));
   };
 

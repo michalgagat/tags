@@ -4523,6 +4523,21 @@ function (_Page) {
 
   var _proto = TagsPage.prototype;
 
+  _proto.init = function init() {
+    var _this = this;
+
+    _Page.prototype.init.call(this);
+
+    this.tags = [];
+    app.store.find('tags').then(function () {
+      var tags = app.store.all('tags').filter(function (tag) {
+        return !tag.parent();
+      });
+      _this.tags = Object(_common_utils_sortTags__WEBPACK_IMPORTED_MODULE_7__["default"])(tags);
+      m.redraw();
+    });
+  };
+
   _proto.view = function view() {
     return m("div", {
       className: "TagsPage"
@@ -4551,13 +4566,13 @@ function (_Page) {
       className: "TagGroup"
     }, m("label", null, app.translator.trans('flarum-tags.admin.tags.primary_heading')), m("ol", {
       className: "TagList TagList--primary"
-    }, Object(_common_utils_sortTags__WEBPACK_IMPORTED_MODULE_7__["default"])(app.store.all('tags')).filter(function (tag) {
+    }, this.tags.filter(function (tag) {
       return tag.position() !== null && !tag.isChild();
     }).map(tagItem))), m("div", {
       className: "TagGroup"
     }, m("label", null, app.translator.trans('flarum-tags.admin.tags.secondary_heading')), m("ul", {
       className: "TagList"
-    }, app.store.all('tags').filter(function (tag) {
+    }, this.tags.filter(function (tag) {
       return tag.position() === null;
     }).sort(function (a, b) {
       return a.name().localeCompare(b.name());
@@ -4565,7 +4580,7 @@ function (_Page) {
   };
 
   _proto.config = function config() {
-    var _this = this;
+    var _this2 = this;
 
     this.$('.TagList').get().map(function (e) {
       sortablejs__WEBPACK_IMPORTED_MODULE_1__["default"].create(e, {
@@ -4575,7 +4590,7 @@ function (_Page) {
         dragClass: 'sortable-dragging',
         ghostClass: 'sortable-placeholder',
         onSort: function onSort(e) {
-          return _this.onSortUpdate(e);
+          return _this2.onSortUpdate(e);
         }
       });
     });

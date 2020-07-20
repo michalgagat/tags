@@ -10,7 +10,16 @@ export default class TagsPage extends Page {
   init() {
     super.init();
 
-    this.tags = sortTags(app.store.all('tags').filter(tag => !tag.parent()));
+    this.tags = [];
+
+    app.store.find('tags').then(() => {
+      let tags = app.store.all('tags').filter(tag => !tag.parent());
+
+      this.tags = sortTags(tags);
+
+      m.redraw();
+    });
+    // this.tags = sortTags(app.store.all('tags').filter(tag => !tag.parent()));
 
     app.history.push('tags', app.translator.trans('flarum-tags.forum.header.back_to_tags_tooltip'));
   }
